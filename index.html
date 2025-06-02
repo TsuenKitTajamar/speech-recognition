@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Transcripción de voz en vivo</title>
+  <title>Transcripción de voz</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -24,6 +24,7 @@
       font-size: 1em;
       padding: 10px 20px;
       cursor: pointer;
+      margin: 10px;
     }
     #status {
       margin-top: 10px;
@@ -33,19 +34,23 @@
   </style>
 </head>
 <body>
-  <h1>Transcripción de voz en vivo</h1>
+  <h1>Transcripción de voz</h1>
   <button id="btnStart">Empezar a escuchar</button>
-  <button id="btnStop" disabled>Detener</button>
+  <button id="btnSend" disabled>Enviar</button>
   <div id="status"></div>
-  <div id="transcription" placeholder="Aquí aparecerá la transcripción..."></div>
+  <div id="transcription"></div>
 
   <script>
     const btnStart = document.getElementById('btnStart');
-    const btnStop = document.getElementById('btnStop');
+    const btnSend = document.getElementById('btnSend');
     const status = document.getElementById('status');
     const transcription = document.getElementById('transcription');
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognizing = false;
+    let isRecognitionActive = false;
+    let finalText = '';
 
     if (!SpeechRecognition) {
       alert("Tu navegador no soporta SpeechRecognition. Usa Chrome o Edge.");
@@ -58,34 +63,57 @@
       recognition.onstart = () => {
         status.textContent = "🎤 Escuchando...";
         btnStart.disabled = true;
-        btnStop.disabled = false;
+        btnSend.disabled = false;
       };
 
       recognition.onerror = (event) => {
         status.textContent = `Error: ${event.error}`;
       };
 
-      recognition.onend = () => {
-        status.textContent = "⏹️ Escucha detenida.";
-        btnStart.disabled = false;
-        btnStop.disabled = true;
+      recognition.onresult = (event) => {
+        let interimText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalText += result[0].transcript + ' ';
+          } else {
+            interimText += result[0].transcript;
+          }
+        }
+        transcription.textContent = finalText + interimText;
       };
 
-      recognition.onresult = (event) => {
-        let texto = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          texto += event.results[i][0].transcript;
+      recognition.onend = () => {
+        isRecognitionActive = false;
+        if (recognizing) {
+          recognition.start(); // Reinicia si el usuario aún no ha pulsado "Enviar"
+          isRecognitionActive = true;
+        } else {
+          status.textContent = "⏹️ Escucha detenida.";
+          btnStart.disabled = false;
+          btnSend.disabled = true;
         }
-        transcription.textContent = texto;
       };
 
       btnStart.onclick = () => {
-        transcription.textContent = '';
-        recognition.start();
+        if (!isRecognitionActive) {
+          finalText = '';
+          transcription.textContent = '';
+          recognizing = true;
+          isRecognitionActive = true;
+          recognition.start();
+        }
       };
 
-      btnStop.onclick = () => {
-        recognition.stop();
+      btnSend.onclick = () => {
+        if (isRecognitionActive) {
+          recognizing = false;
+          isRecognitionActive = false;
+          recognition.stop();
+          status.textContent = "✅ Texto listo para enviar";
+          alert("Texto transcrito:\n" + finalText);
+          console.log("Texto final:", finalText);
+        }
       };
     }
   </script>
