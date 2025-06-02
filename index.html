@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Transcripción de voz</title>
+  <title>Transcripción con SpeechRecognition</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -34,88 +34,72 @@
   </style>
 </head>
 <body>
-  <h1>Transcripción de voz</h1>
+  <h1>Transcripción con SpeechRecognition</h1>
   <button id="btnStart">Empezar a escuchar</button>
-  <button id="btnSend" disabled>Enviar</button>
+  <button id="btnStop" disabled>Detener</button>
   <div id="status"></div>
   <div id="transcription"></div>
 
-  <script>
-    const btnStart = document.getElementById('btnStart');
-    const btnSend = document.getElementById('btnSend');
-    const status = document.getElementById('status');
-    const transcription = document.getElementById('transcription');
+<script>
+  const btnStart = document.getElementById('btnStart');
+  const btnStop = document.getElementById('btnStop');
+  const status = document.getElementById('status');
+  const transcription = document.getElementById('transcription');
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  // Crear instancia de SpeechRecognition
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-    let recognizing = false;
-    let isRecognitionActive = false;
-    let finalText = '';
+  if (!SpeechRecognition) {
+    alert("Tu navegador no soporta SpeechRecognition. Usa Chrome o Edge.");
+  } else {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES'; // idioma español
+    recognition.interimResults = true; // resultados intermedios
+    recognition.continuous = true;     // escucha continua
 
-    if (!SpeechRecognition) {
-      alert("Tu navegador no soporta SpeechRecognition. Usa Chrome o Edge.");
-    } else {
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'es-ES';
-      recognition.interimResults = true;
-      recognition.continuous = true;
+    let finalTranscript = '';
 
-      recognition.onstart = () => {
-        status.textContent = "🎤 Escuchando...";
-        btnStart.disabled = true;
-        btnSend.disabled = false;
-      };
+    recognition.onstart = () => {
+      status.textContent = '🎤 Escuchando...';
+      btnStart.disabled = true;
+      btnStop.disabled = false;
+    };
 
-      recognition.onerror = (event) => {
-        status.textContent = `Error: ${event.error}`;
-      };
+    recognition.onerror = (event) => {
+      status.textContent = '❌ Error: ' + event.error;
+    };
 
-      recognition.onresult = (event) => {
-        let interimText = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalText += result[0].transcript + ' ';
-          } else {
-            interimText += result[0].transcript;
-          }
-        }
-        transcription.textContent = finalText + interimText;
-      };
+    recognition.onresult = (event) => {
+      let interimTranscript = '';
 
-      recognition.onend = () => {
-        isRecognitionActive = false;
-        if (recognizing) {
-          recognition.start(); // Reinicia si el usuario aún no ha pulsado "Enviar"
-          isRecognitionActive = true;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript + ' ';
         } else {
-          status.textContent = "⏹️ Escucha detenida.";
-          btnStart.disabled = false;
-          btnSend.disabled = true;
+          interimTranscript += transcript;
         }
-      };
+      }
 
-      btnStart.onclick = () => {
-        if (!isRecognitionActive) {
-          finalText = '';
-          transcription.textContent = '';
-          recognizing = true;
-          isRecognitionActive = true;
-          recognition.start();
-        }
-      };
+      transcription.textContent = finalTranscript + interimTranscript;
+    };
 
-      btnSend.onclick = () => {
-        if (isRecognitionActive) {
-          recognizing = false;
-          isRecognitionActive = false;
-          recognition.stop();
-          status.textContent = "✅ Texto listo para enviar";
-          alert("Texto transcrito:\n" + finalText);
-          console.log("Texto final:", finalText);
-        }
-      };
-    }
-  </script>
+    recognition.onend = () => {
+      status.textContent = '⏹️ Escucha detenida.';
+      btnStart.disabled = false;
+      btnStop.disabled = true;
+    };
+
+    btnStart.onclick = () => {
+      finalTranscript = '';
+      transcription.textContent = '';
+      recognition.start();
+    };
+
+    btnStop.onclick = () => {
+      recognition.stop();
+    };
+  }
+</script>
 </body>
 </html>
