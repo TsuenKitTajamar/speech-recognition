@@ -2,104 +2,29 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Transcripción con SpeechRecognition</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 40px auto;
-      text-align: center;
-    }
-    #transcription {
-      margin-top: 20px;
-      border: 2px solid #333;
-      min-height: 150px;
-      padding: 10px;
-      font-size: 1.2em;
-      white-space: pre-wrap;
-      background-color: #f0f0f0;
-    }
-    button {
-      font-size: 1em;
-      padding: 10px 20px;
-      cursor: pointer;
-      margin: 10px;
-    }
-    #status {
-      margin-top: 10px;
-      font-style: italic;
-      color: green;
-    }
-  </style>
+  <title>Transcriptor Simple</title>
 </head>
 <body>
-  <h1>Transcripción con SpeechRecognition</h1>
-  <button id="btnStart">Empezar a escuchar</button>
-  <button id="btnStop" disabled>Detener</button>
-  <div id="status"></div>
-  <div id="transcription"></div>
+  <button id="start">Empezar a escuchar</button>
+  <p id="texto"></p>
 
-<script>
-  const btnStart = document.getElementById('btnStart');
-  const btnStop = document.getElementById('btnStop');
-  const status = document.getElementById('status');
-  const transcription = document.getElementById('transcription');
+  <script>
+    const btn = document.getElementById('start');
+    const texto = document.getElementById('texto');
 
-  // Crear instancia de SpeechRecognition
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
 
-  if (!SpeechRecognition) {
-    alert("Tu navegador no soporta SpeechRecognition. Usa Chrome o Edge.");
-  } else {
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-ES'; // idioma español
-    recognition.interimResults = true; // resultados intermedios
-    recognition.continuous = true;     // escucha continua
+    btn.onclick = () => recognition.start();
 
-    let finalTranscript = '';
-
-    recognition.onstart = () => {
-      status.textContent = '🎤 Escuchando...';
-      btnStart.disabled = true;
-      btnStop.disabled = false;
+    recognition.onresult = e => {
+      texto.textContent = e.results[0][0].transcript;
     };
 
-    recognition.onerror = (event) => {
-      status.textContent = '❌ Error: ' + event.error;
+    recognition.onerror = e => {
+      texto.textContent = 'Error: ' + e.error;
     };
-
-    recognition.onresult = (event) => {
-      let interimTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript + ' ';
-        } else {
-          interimTranscript += transcript;
-        }
-      }
-
-      transcription.textContent = finalTranscript + interimTranscript;
-    };
-
-    recognition.onend = () => {
-      status.textContent = '⏹️ Escucha detenida.';
-      btnStart.disabled = false;
-      btnStop.disabled = true;
-    };
-
-    btnStart.onclick = () => {
-      finalTranscript = '';
-      transcription.textContent = '';
-      recognition.start();
-    };
-
-    btnStop.onclick = () => {
-      recognition.stop();
-    };
-  }
-</script>
+  </script>
 </body>
 </html>
