@@ -2,12 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<title>Transcriptor Simple</title>
+<title>Transcriptor con Historial</title>
 <style>
   body {
     font-family: Arial, sans-serif;
     padding: 2rem;
     background: #f0f0f0;
+    max-width: 600px;
+    margin: auto;
     text-align: center;
   }
   #start {
@@ -32,11 +34,24 @@
     font-weight: bold;
     color: #333;
   }
-  #texto {
+  #historial {
     margin-top: 2rem;
-    font-size: 1.4rem;
-    color: #222;
-    min-height: 2rem;
+    background: white;
+    border-radius: 10px;
+    padding: 1rem;
+    height: 300px;
+    overflow-y: auto;
+    text-align: left;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+  .mensaje {
+    background: #007bff;
+    color: white;
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    max-width: 80%;
+    word-wrap: break-word;
   }
 </style>
 </head>
@@ -44,12 +59,12 @@
 
 <button id="start">Empezar a escuchar</button>
 <div id="status"></div>
-<p id="texto"></p>
+<div id="historial"></div>
 
 <script>
   const btn = document.getElementById('start');
-  const texto = document.getElementById('texto');
   const status = document.getElementById('status');
+  const historial = document.getElementById('historial');
 
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
@@ -77,17 +92,30 @@
     };
 
     recognition.onresult = e => {
-      texto.textContent = e.results[0][0].transcript;
+      const texto = e.results[0][0].transcript;
+      agregarMensaje(texto);
     };
 
     recognition.onerror = e => {
-      texto.textContent = 'Error: ' + e.error;
+      agregarMensaje(`Error: ${e.error}`, true);
       status.textContent = '';
       btn.disabled = false;
       btn.style.cursor = 'pointer';
     };
 
     status.textContent = 'Haz clic para empezar a escuchar';
+  }
+
+  function agregarMensaje(texto, esError = false) {
+    const div = document.createElement('div');
+    div.classList.add('mensaje');
+    if (esError) {
+      div.style.background = '#dc3545'; // rojo para errores
+    }
+    div.textContent = texto;
+    historial.appendChild(div);
+    // Scroll automático abajo
+    historial.scrollTop = historial.scrollHeight;
   }
 </script>
 
