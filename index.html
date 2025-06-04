@@ -1,22 +1,80 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Transcriptor Simple</title>
+<meta charset="UTF-8" />
+<title>Transcriptor Simple</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 2rem;
+    background: #f0f0f0;
+    text-align: center;
+  }
+  #start {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #start:hover:not(:disabled) {
+    background: #0056b3;
+  }
+  #start:disabled {
+    background: #999;
+    cursor: not-allowed;
+  }
+  #status {
+    margin-top: 1rem;
+    font-weight: bold;
+    color: #333;
+  }
+  #texto {
+    margin-top: 2rem;
+    font-size: 1.4rem;
+    color: #222;
+    min-height: 2rem;
+  }
+</style>
 </head>
 <body>
-  <button id="start">Empezar a escuchar</button>
-  <p id="texto"></p>
 
-  <script>
-    const btn = document.getElementById('start');
-    const texto = document.getElementById('texto');
+<button id="start">Empezar a escuchar</button>
+<div id="status"></div>
+<p id="texto"></p>
 
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+<script>
+  const btn = document.getElementById('start');
+  const texto = document.getElementById('texto');
+  const status = document.getElementById('status');
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    btn.disabled = true;
+    status.textContent = 'Lo siento, tu navegador no soporta reconocimiento de voz.';
+  } else {
+    const recognition = new SpeechRecognition();
     recognition.lang = 'es-ES';
     recognition.interimResults = false;
 
-    btn.onclick = () => recognition.start();
+    btn.onclick = () => {
+      recognition.start();
+    };
+
+    recognition.onstart = () => {
+      status.textContent = 'Escuchando... 🎙️';
+      btn.disabled = true;
+      btn.style.cursor = 'wait';
+    };
+
+    recognition.onend = () => {
+      status.textContent = 'Haz clic para empezar a escuchar';
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
+    };
 
     recognition.onresult = e => {
       texto.textContent = e.results[0][0].transcript;
@@ -24,7 +82,14 @@
 
     recognition.onerror = e => {
       texto.textContent = 'Error: ' + e.error;
+      status.textContent = '';
+      btn.disabled = false;
+      btn.style.cursor = 'pointer';
     };
-  </script>
+
+    status.textContent = 'Haz clic para empezar a escuchar';
+  }
+</script>
+
 </body>
 </html>
