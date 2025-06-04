@@ -2,12 +2,35 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
-<title>Transcriptor con Historial</title>
+<title>Speech Recognition</title>
 <style>
+  /* Quitar márgenes y padding del body para que el header llegue arriba */
   body {
     font-family: Arial, sans-serif;
+    margin: 0;
     padding: 2rem;
     background: #f0f0f0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+  header {
+    background: #007bff;
+    color: white;
+    padding: 1rem 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+  }
+  /* Para que el contenido no quede oculto debajo del header */
+  main {
+    padding-top: 4rem; /* espacio igual o mayor al header */
     max-width: 600px;
     margin: auto;
     text-align: center;
@@ -57,9 +80,13 @@
 </head>
 <body>
 
-<button id="start">Empezar a escuchar</button>
-<div id="status"></div>
-<div id="historial"></div>
+<header>Speech Recognition</header>
+
+<main>
+  <button id="start">Empezar a escuchar</button>
+  <div id="status"></div>
+  <div id="historial"></div>
+</main>
 
 <script>
   const btn = document.getElementById('start');
