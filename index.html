@@ -1,150 +1,21 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<title>Speech Recognition</title>
-<style>
-  /* Quitar márgenes y padding del body para que el header llegue arriba */
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 2rem;
-    background: #f0f0f0;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-  }
-  header {
-    background: #007bff;
-    color: white;
-    padding: 1rem 0;
-    font-size: 1.8rem;
-    font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 9999;
-  }
-  /* Para que el contenido no quede oculto debajo del header */
-  main {
-    padding-top: 4rem; /* espacio igual o mayor al header */
-    max-width: 600px;
-    margin: auto;
-    text-align: center;
-  }
-  #start {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 1rem 2rem;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  #start:hover:not(:disabled) {
-    background: #0056b3;
-  }
-  #start:disabled {
-    background: #999;
-    cursor: not-allowed;
-  }
-  #status {
-    margin-top: 1rem;
-    font-weight: bold;
-    color: #333;
-  }
-  #historial {
-    margin-top: 2rem;
-    background: white;
-    border-radius: 10px;
-    padding: 1rem;
-    height: 300px;
-    overflow-y: auto;
-    text-align: left;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-  }
-  .mensaje {
-    background: #007bff;
-    color: white;
-    padding: 0.6rem 1rem;
-    border-radius: 20px;
-    margin-bottom: 10px;
-    max-width: 80%;
-    word-wrap: break-word;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <title>Speech Recognition</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<header>Speech Recognition</header>
+  <header>Speech Recognition</header>
 
-<main>
-  <button id="start">Empezar a escuchar</button>
-  <div id="status"></div>
-  <div id="historial"></div>
-</main>
+  <main>
+    <button id="start">Empezar a escuchar</button>
+    <div id="status"></div>
+    <div id="historial"></div>
+  </main>
 
-<script>
-  const btn = document.getElementById('start');
-  const status = document.getElementById('status');
-  const historial = document.getElementById('historial');
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    btn.disabled = true;
-    status.textContent = 'Lo siento, tu navegador no soporta reconocimiento de voz.';
-  } else {
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-ES';
-    recognition.interimResults = false;
-
-    btn.onclick = () => {
-      recognition.start();
-    };
-
-    recognition.onstart = () => {
-      status.textContent = 'Escuchando... 🎙️';
-      btn.disabled = true;
-      btn.style.cursor = 'wait';
-    };
-
-    recognition.onend = () => {
-      status.textContent = 'Haz clic para empezar a escuchar';
-      btn.disabled = false;
-      btn.style.cursor = 'pointer';
-    };
-
-    recognition.onresult = e => {
-      const texto = e.results[0][0].transcript;
-      agregarMensaje(texto);
-    };
-
-    recognition.onerror = e => {
-      agregarMensaje(`Error: ${e.error}`, true);
-      status.textContent = '';
-      btn.disabled = false;
-      btn.style.cursor = 'pointer';
-    };
-
-    status.textContent = 'Haz clic para empezar a escuchar';
-  }
-
-  function agregarMensaje(texto, esError = false) {
-    const div = document.createElement('div');
-    div.classList.add('mensaje');
-    if (esError) {
-      div.style.background = '#dc3545'; // rojo para errores
-    }
-    div.textContent = texto;
-    historial.appendChild(div);
-    // Scroll automático abajo
-    historial.scrollTop = historial.scrollHeight;
-  }
-</script>
+  <script src="js/script.js"></script>
 
 </body>
 </html>
