@@ -3,6 +3,7 @@ const status = document.getElementById('status');
 const historial = document.getElementById('historial');
 
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
 if (!SpeechRecognition) {
   btn.disabled = true;
   status.textContent = 'Lo siento, tu navegador no soporta reconocimiento de voz.';
@@ -45,10 +46,29 @@ if (!SpeechRecognition) {
 function agregarMensaje(texto, esError = false) {
   const div = document.createElement('div');
   div.classList.add('mensaje');
+
   if (esError) {
     div.style.background = '#dc3545'; // rojo para errores
+    div.textContent = texto;
+  } else {
+    const textoSpan = document.createElement('span');
+    textoSpan.textContent = texto;
+
+    const escucharBtn = document.createElement('button');
+    escucharBtn.textContent = '🔊 Escuchar';
+    escucharBtn.style.marginLeft = '10px';
+    escucharBtn.onclick = () => hablarTexto(texto);
+
+    div.appendChild(textoSpan);
+    div.appendChild(escucharBtn);
   }
-  div.textContent = texto;
+
   historial.appendChild(div);
   historial.scrollTop = historial.scrollHeight;
+}
+
+function hablarTexto(texto) {
+  const utterance = new SpeechSynthesisUtterance(texto);
+  utterance.lang = 'es-ES';
+  speechSynthesis.speak(utterance);
 }
